@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h2 {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            color: #4a5568;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+            color: #2d3748;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group input:hover {
+            border-color: #cbd5e0;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 24px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .prediction-result {
+            margin-top: 32px;
+            padding: 24px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 16px;
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 600;
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.3);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            font-size: 1.1rem;
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        .form-group:focus-within .input-icon {
+            color: #667eea;
+        }
+
+        .info-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .info-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: #2d3748;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            width: 280px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            border: 6px solid transparent;
+            border-top-color: #2d3748;
+        }
+
+        .tooltip.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .tooltip h4 {
+            color: #90cdf4;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .tooltip .impact {
+            background: rgba(144, 205, 244, 0.1);
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
+            border-left: 3px solid #90cdf4;
+        }
+
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .shape:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape:nth-child(2) {
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+
+        .shape:nth-child(3) {
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 32px 24px;
+                margin: 20px;
+            }
+            
+            .header h2 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-shapes">
+        <div class="shape">🏠</div>
+        <div class="shape">🏡</div>
+        <div class="shape">🏘️</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2>House Price Predictor</h2>
+            <p>Enter property details to get an estimated price</p>
+        </div>
+
+        <form method="POST" action="/predict">
+            <div class="form-group">
+                <label for="rm">Average Number of Rooms</label>
+                <input type="text" id="rm" name="rm" placeholder="e.g., 6.5" required>
+                <span class="input-icon">🏠</span>
+                <button type="button" class="info-btn" onclick="toggleTooltip('tooltip-rm')">i</button>
+                <div id="tooltip-rm" class="tooltip">
+                    <h4>Number of Rooms</h4>
+                    <p>The average number of rooms per dwelling in the area. This includes bedrooms, living rooms, kitchens, and bathrooms.</p>
+                    <div class="impact">
+                        <strong>Impact:</strong> More rooms typically mean higher property values. Each additional room can significantly increase the house price.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="lstat">Lower Status Population (%)</label>
+                <input type="text" id="lstat" name="lstat" placeholder="e.g., 12.5" required>
+                <span class="input-icon">📊</span>
+                <button type="button" class="info-btn" onclick="toggleTooltip('tooltip-lstat')">i</button>
+                <div id="tooltip-lstat" class="tooltip">
+                    <h4>Lower Status Population</h4>
+                    <p>Percentage of the population considered lower socioeconomic status in the neighborhood. This reflects the area's economic composition.</p>
+                    <div class="impact">
+                        <strong>Impact:</strong> Higher percentages typically correlate with lower property values. Areas with lower percentages tend to have higher home prices.
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="ptratio">Pupil-Teacher Ratio</label>
+                <input type="text" id="ptratio" name="ptratio" placeholder="e.g., 15.3" required>
+                <span class="input-icon">🎓</span>
+                <button type="button" class="info-btn" onclick="toggleTooltip('tooltip-ptratio')">i</button>
+                <div id="tooltip-ptratio" class="tooltip">
+                    <h4>Pupil-Teacher Ratio</h4>
+                    <p>The average number of students per teacher in local schools. Lower ratios indicate smaller class sizes and potentially better education quality.</p>
+                    <div class="impact">
+                        <strong>Impact:</strong> Lower ratios (better schools) typically increase property values as families seek good school districts for their children.
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Predict House Price
+            </button>
+        </form>
+
+        <!-- Prediction Result -->
+        {% if prediction %}
+        <div class="prediction-result">
+            <h3>🏠 Predicted House Price: ${{ "{:,.2f}".format(prediction) }}</h3>
+        </div>
+        {% endif %}
+
+        <!-- Error Message -->
+        {% if error %}
+        <div class="prediction-result" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);">
+            <h3>⚠️ {{ error }}</h3>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Add some interactive behavior
+        const inputs = document.querySelectorAll('input');
+        
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value) {
+                    this.style.backgroundColor = '#f8fafc';
+                } else {
+                    this.style.backgroundColor = '#fff';
+                }
+            });
+        });
+
+        // Add loading effect when form is submitted
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function() {
+            const submitBtn = document.querySelector('.submit-btn');
+            submitBtn.innerHTML = 'Predicting...';
+            submitBtn.disabled = true;
+        });
+
+        // Tooltip functionality
+        function toggleTooltip(tooltipId) {
+            const tooltip = document.getElementById(tooltipId);
+            const allTooltips = document.querySelectorAll('.tooltip');
+            
+            // Hide all other tooltips
+            allTooltips.forEach(t => {
+                if (t.id !== tooltipId) {
+                    t.classList.remove('show');
+                }
+            });
+            
+            // Toggle current tooltip
+            tooltip.classList.toggle('show');
+        }
+
+        // Close tooltips when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.info-btn') && !e.target.closest('.tooltip')) {
+                document.querySelectorAll('.tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+
+        // Close tooltips when pressing Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('show');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
