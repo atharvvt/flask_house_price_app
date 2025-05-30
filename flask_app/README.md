@@ -44,7 +44,7 @@ flask_house_price_app/
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/flask_house_price_app.git
+   git clone https://github.com/atharvvt/flask_house_price_app.git
    cd flask_house_price_app/flask_app
    ```
 
