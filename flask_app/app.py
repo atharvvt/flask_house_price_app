@@ -24,7 +24,7 @@ def predict():
         prediction = model.predict(features)[0]
 
         # Convert to actual dollars
-        prediction_in_dollars = prediction * 1000
+        prediction_in_dollars = prediction * 10000
 
         return render_template('index.html', prediction=round(prediction_in_dollars, 2))
     except Exception as e:
